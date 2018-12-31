@@ -22,11 +22,16 @@ fn main() {
     // Define the whole field
     let mut field = [[0usize; SIZE]; SIZE];
 
-    // Parse squares from input file, map overlaps in field
-    read_to_string("input.txt")
+    // Parse squares from input file
+    let squares: Vec<Square> = read_to_string("input.txt")
         .expect("failed to read input from file")
         .lines()
         .map(parse_square)
+        .collect();
+
+    // Map the overlaps in the field
+    squares
+        .iter()
         .for_each(|s|
             field.iter_mut()
                 .skip(s.y)
@@ -39,17 +44,27 @@ fn main() {
                 )
         );
 
-    // Count the cells covered by more than one square
-    let covered: usize = field
+    // Find square that has no overlap
+    let id: usize = squares
         .par_iter()
-        .map(|col| col
-             .iter()
-             .filter(|c| **c > 1)
-             .count()
-        )
-        .sum();
+        .find_any(|s| field_has_one(&field, &s))
+        .unwrap()
+        .n;
 
-    println!("Covered inches: {}", covered);
+    println!("Non-overlapping square index: {}", id);
+}
+
+/// Check whether the field has one overlap count at the position of the given square.
+fn field_has_one(field: &[[usize; SIZE]; SIZE], square: &Square) -> bool {
+    field.iter()
+        .skip(square.y)
+        .take(square.h)
+        .all(|row| row
+             .iter()
+             .skip(square.x)
+             .take(square.w)
+             .all(|c| *c == 1)
+        )
 }
 
 /// Represents a square at the given position in a grid.
