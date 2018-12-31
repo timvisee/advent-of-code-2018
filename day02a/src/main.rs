@@ -1,26 +1,33 @@
 use std::collections::HashMap;
 use std::fs::read_to_string;
-use std::io;
 
-fn main() -> io::Result<()> {
+fn main() {
     // Read the input file
-    let input = read_to_string("input.txt")?;
+    let input = read_to_string("input.txt")
+        .expect("failed to read input file");
 
     // Count line characters, totall them
-    let counted: Vec<(usize, usize)> = input
+    let counted: Vec<(bool, bool)> = input
         .lines()
-        .map(count)
+        .map(twice_thrice)
         .collect();
-    let result = counted.iter().filter(|e| e.0 > 0).count() *
-        counted.iter().filter(|e| e.1 > 0).count();
 
-    println!("Result: {}", result);
-
-    Ok(())
+    // Report the result
+    println!(
+        "Result: {}",
+        counted
+            .iter()
+            .filter(|e| e.0)
+            .count()
+        * counted
+            .iter()
+            .filter(|e| e.1)
+            .count()
+    );
 }
 
-/// Count characters in the given sequence that occur exactly twice or thrise.
-fn count(seq: &str) -> (usize, usize) {
+/// Check whether the given sequence of characters contains a character exactly twice or thrice.
+fn twice_thrice(seq: &str) -> (bool, bool) {
     // Fold character counts
     let set = seq
         .chars()
@@ -33,11 +40,9 @@ fn count(seq: &str) -> (usize, usize) {
     // Count and return result
     (
         set.iter()
-            .filter(|(_, c)| **c == 2)
-            .count(),
+            .any(|(_, c)| *c == 2),
         set.iter()
-            .filter(|(_, c)| **c == 3)
-            .count(),
+            .any(|(_, c)| *c == 3),
     )
 }
 
